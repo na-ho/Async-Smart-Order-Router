@@ -1,0 +1,29 @@
+﻿
+cmake_minimum_required (VERSION 3.8)
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME ON)
+
+#set(BOOST_LIB  "C:/libs/boost_1_75_0/lib64-msvc-14.2")
+#ADD_DEFINITIONS("-DBOOST_ALL_NO_LIB")
+#include_directories("C:/libs/boost_1_75_0")
+#include_directories("C:/libs/fmt-7.1.3/include")
+#add_subdirectory("fmt")
+include_directories("./libs/libcuckoo")
+message( ${CMAKE_MODULE_PATH} )
+message( ${CMAKE_PREFIX_PATH} )
+
+find_package(fmt)
+find_package(Boost REQUIRED COMPONENTS date_time)
+include_directories(${Boost_INCLUDE_DIRS})
+#link_directories(${Boost_LIBRARY_DIRS})
+#message( ${Boost_LIBRARY_DIRS} )
+message("## Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
+# Add source to this project's executable.
+add_executable (FixGateway "FixGateway.cpp" "FixGateway.h" "Server.h" "Server.cpp" "Session.h" "Session.cpp" "UserManager.h" "UserManager.cpp" "util/UtilString.h" "util/UtilString.cpp" "PreHeader.h" "FixGatewayData.h" "FixGatewayData.cpp" "User.h" "User.cpp")
+target_link_libraries(FixGateway PRIVATE fmt::fmt-header-only;Boost::date_time)
+target_compile_features(FixGateway PRIVATE cxx_std_17)
+# TODO: Add tests and install targets if needed.
+# target_link_libraries(FixGateway ${Boost_LIBRARIES})
+#target_link_libraries(FixGateway ${BOOST_LIBRARY_DIRS})
+#target_link_libraries(FixGateway ${BOOST_LIB})
