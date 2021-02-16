@@ -2,6 +2,9 @@
 
 #include <boost/asio.hpp>
 
+#include "libs/hffix/hffix.hpp"
+#include "Session.h"
+
 class Server
 {
 public:
@@ -12,7 +15,7 @@ private:
 
     void initFixLogon();
    
-    std::map<std::string, std::any> mpFixMsgLambda;
+    MAP_LAMBDA_MSG_FIX _mpFixMsgLambda;
 
-    boost::asio::ip::tcp::acceptor acceptor_;
+    boost::asio::ip::tcp::acceptor _acceptor;
 };

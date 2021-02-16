@@ -10,8 +10,9 @@
 #include "PreHeader.h"
 #include "FixGatewayData.h"
 
-Session::Session(boost::asio::ip::tcp::socket socket)
+Session::Session(boost::asio::ip::tcp::socket socket, const MAP_LAMBDA_MSG_FIX *mpFixMsgLambda)
 	: _socket(std::move(socket))
+	, _mpFixMsgLambda(mpFixMsgLambda)
 	, _seq_send(0)
 {
 	_userMgr = FixGatewayData::instance()->getUserMgr();
@@ -43,30 +44,18 @@ void Session::do_read()
 					fmt::print("test : {}\n", UtilString::fast_compare("ASD", "AS", 3));
 					fmt::print("test : {}\n", UtilString::fast_compare("ASD", "ASE", 3));
 					fmt::print("test : {}\n", UtilString::fast_compare("AS", "ASE", 2));*/
-				if (UtilString::fast_compare(reader.message_type()->value().begin(), "A", 1) == 0) {
+				//if (UtilString::fast_compare(reader.message_type()->value().begin(), "A", 1) == 0) {
 					// login
-
-					fmt::print("login\n");
-					hffix::message_reader::const_iterator i = reader.begin();
-					if (reader.find_with_hint(hffix::tag::SenderCompID, i)) {
-						auto userId = i++->value().as_string();
-						fmt::print("userId : {}\n", userId);
-						if (reader.find_with_hint(hffix::tag::RawData, i)) {
-							auto password = i++->value().as_string();
-							if (_userMgr->checkAuthorization(userId, password)) {
-								// insert into map
-							}
-							else {
-								write_fix_login(userId, "Password invalid");
-							}
-						}
-						else {
-							// cannot find password
-							write_fix_login(userId, "Cannot find password");
-						}
-					}
-
+				//}
+				auto msgType = reader.message_type()->value().as_string();
+				//(*_mpFixMsgLambda)[msgType](&reader, this);
+			//	auto testFunction = (*_mpFixMsgLambda)[msgType];
+				//auto handleFunction = _mpFixMsgLambda->at(msgType);
+				auto handleFunctionIt = _mpFixMsgLambda->find(msgType);
+				if (handleFunctionIt != _mpFixMsgLambda->end()) {
+					handleFunctionIt->second(&reader, this);
 				}
+				
 			}
 
 			do_read();
