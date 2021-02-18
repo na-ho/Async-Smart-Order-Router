@@ -1,31 +1,34 @@
-#pragma
+#pragma once
 
 #include "UserManager.h"
+#include "MsgBus.h"
 
-class FixGatewayData
+namespace FixGateway
 {
-    UserManager *_userMgr;
-    static FixGatewayData* s_instance;
-    FixGatewayData(){
-        init();
-    }
-
-    ~FixGatewayData() {
-        delete _userMgr;
-    }
-
-    void init() {
-        _userMgr = new UserManager();
-    }
-public:
-    UserManager* getUserMgr() {
-        return _userMgr;
-    }
-
-    static FixGatewayData* instance()
+    class FixGatewayData
     {
-        if (!s_instance)
-            s_instance = new FixGatewayData;
-        return s_instance;
-    }
-};
+    public:
+        UserManager* getUserMgr() {
+            return _userMgr;
+        }
+
+        static FixGatewayData* instance()
+        {
+            if (!s_instance)
+                s_instance = new FixGatewayData;
+            return s_instance;
+        }
+
+    private:
+        FixGatewayData();
+        ~FixGatewayData();
+
+        void init();
+
+    private:
+        static FixGatewayData* s_instance;
+
+        UserManager* _userMgr;
+        MsgBus* _msgBus;
+    };
+}

@@ -5,11 +5,16 @@
 
 #include "User.h"
 
-class UserManager
+namespace FixGateway
 {
-public:
-	bool checkAuthorization(const std::string &userName, const std::string &password);
-	
-private:
-	libcuckoo::cuckoohash_map<std::string, User*> _mpUser;
-};
+	class UserManager
+	{
+	public:
+		bool checkAuthorization(const std::string& userName, const std::string& password);
+
+		void insertUser(std::string userID, User* user);
+	private:
+		libcuckoo::cuckoohash_map<std::string, User*> _mpUser;
+	};
+
+}

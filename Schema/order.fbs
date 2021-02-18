@@ -1,0 +1,8 @@
+namespace FixGateway.Serialization;
+
+table Order {
+  user_id:string;
+  price:float;
+  qty:float;
+}
+

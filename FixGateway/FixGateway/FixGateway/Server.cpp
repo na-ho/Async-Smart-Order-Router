@@ -2,90 +2,142 @@
 #include <fmt/format.h>
 
 #include "libs/hffix/hffix.hpp"
-#include "FixGateway.h"
 #include "libs/sole.hpp"
+#include "libs/fast_float/fast_float.h"
 
+#include "FixGateway.h"
 #include "Server.h"
 #include "Session.h"
+#include "FixGatewayData.h"
+#include "UserFactory.h"
 
-#include <boost/any.hpp>
+#include "schema/order_generated.h"
+
 
 using boost::asio::ip::tcp;
 
+using namespace FixGateway;
+
 Server::Server(boost::asio::io_context& io_context, short port)
-    : _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
+	: _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
 {
-    initFixLogon();
-    do_accept();
+	_userMgr = FixGatewayData::instance()->getUserMgr();
+	initFixLogon();
+	initFixOrder();
+	initMsgBus();
+
+	do_accept();
+}
+
+FixGateway::Server::~Server()
+{
+	if (_msgBus != NULL) {
+		delete _msgBus;
+	}
 }
 
 void Server::do_accept()
 {
 
-    _acceptor.async_accept(
-        [this](boost::system::error_code ec, tcp::socket socket)
-        {
-            //   boost::uuids::uuid uuid = boost::uuids::random_generator()();
-       //        std::cout << uuid << std::endl;
-             //  sole::uuid u0 = sole::uuid0(), u1 = sole::uuid1(), u4 = sole::uuid4();
+	_acceptor.async_accept(
+		[this](boost::system::error_code ec, tcp::socket socket)
+		{
+			//   boost::uuids::uuid uuid = boost::uuids::random_generator()();
+	   //        std::cout << uuid << std::endl;
+			 //  sole::uuid u0 = sole::uuid0(), u1 = sole::uuid1(), u4 = sole::uuid4();
 
 
 
-            //   fmt::print("Peer IP: {}, {}\n", socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port());
-           //    auto source = fmt::format("{}{}", socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port());
-           //    sole::uuid u4 = sole::rebuild(source);
-            auto u4 = sole::uuid4();
-            //   boost::multiprecision::uint128_t combined = u4.ab << 64 | u4.cd;
-            //   boost::multiprecision::uint128_t  test;
-            //   fmt::print("do_accept {}\n", u4.base62());
-            fmt::print("do_accept {}, {}\n", u4.ab, u4.cd);
-            //   fmt::print("do_accept {}\n", combined);
-            fmt::print("do_accept {}, {}\n", socket.remote_endpoint().data()->sa_family, socket.remote_endpoint().port());
+			//   fmt::print("Peer IP: {}, {}\n", socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port());
+		   //    auto source = fmt::format("{}{}", socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port());
+		   //    sole::uuid u4 = sole::rebuild(source);
+			auto u4 = sole::uuid4();
+			//   boost::multiprecision::uint128_t combined = u4.ab << 64 | u4.cd;
+			//   boost::multiprecision::uint128_t  test;
+			//   fmt::print("do_accept {}\n", u4.base62());
+			fmt::print("do_accept {}, {}\n", u4.ab, u4.cd);
+			//   fmt::print("do_accept {}\n", combined);
+			fmt::print("do_accept {}, {}\n", socket.remote_endpoint().data()->sa_family, socket.remote_endpoint().port());
 
-            if (!ec)
-            {
-                socket.set_option(boost::asio::ip::tcp::no_delay(true));
-                std::shared_ptr<Session> session = std::make_shared<Session>(std::move(socket), &_mpFixMsgLambda);
-                session->start();
-            }
+			if (!ec)
+			{
+				socket.set_option(boost::asio::ip::tcp::no_delay(true));
+				std::shared_ptr<Session> session = std::make_shared<Session>(std::move(socket), &_fixMsgLambda);
+				session->start();
+			}
 
-            do_accept();
-        });
+			do_accept();
+		});
 }
 
 void Server::initFixLogon()
 {
-    auto lambdaFixA = []( hffix::message_reader *reader, Session *session) { 
-        fmt::print("login\n");
-        hffix::message_reader::const_iterator i = reader->begin();
-        if (reader->find_with_hint(hffix::tag::SenderCompID, i)) {
-            auto userId = i++->value().as_string();
-            fmt::print("userId : {}\n", userId);
-            if (reader->find_with_hint(hffix::tag::RawData, i)) {
-                auto password = i++->value().as_string();
-               // if (session->_userMgr->checkAuthorization(userId, password)) {
-                if(true){
-                    // insert into map
-                }
-                else {
-                    session->write_fix_login(userId, "Password invalid");
-                }
-            }
-            else {
-                // cannot find password
-                session->write_fix_login(userId, "Cannot find password");
-            }
-        }
-    };
-  //  auto lambda2 = [](std::string s) { return s; };
+	_fixMsgLambda.emplace("A", [this](hffix::message_reader* reader, Session* session) {
+		fmt::print("login\n");
+		hffix::message_reader::const_iterator i = reader->begin();
+		if (reader->find_with_hint(hffix::tag::SenderCompID, i)) {
+			auto userId = i++->value().as_string();
+			fmt::print("userId : {}\n", userId);
+			if (reader->find_with_hint(hffix::tag::RawData, i)) {
+				auto password = i++->value().as_string();
+				if (_userMgr->checkAuthorization(userId, password)) {
+					// insert into map
+					auto user = UserFactory::instance()->newUser();
+					user->setID(userId);
+					session->setUser(user);
+					_userMgr->insertUser(std::move(userId), user);
+					session->write_fix_login(userId, "A", "Login succeed");
+				}
+				else {
+					session->write_fix_login(userId, "5", "Password invalid");
+				}
+			}
+			else {
+				// cannot find password
+				session->write_fix_login(userId, "5", "Cannot find password");
+			}
+		}
+	});
 
 
-    //_mpFixMsgLambda["A"] = lambdaFixA;
-  //  mpFixMsgLambda["second"] = lambda2;
+}
 
-  //  auto lambda1 = [](int i) { std::cout << "test : " << i << std::endl; };
+void Server::initFixOrder()
+{
+	_fixMsgLambda.emplace("D", [this](hffix::message_reader* reader, Session* session) {
+		fmt::print("order\n");
+		hffix::message_reader::const_iterator i = reader->begin();
+		if (reader->find_with_hint(hffix::tag::OrderQty, i)) {
+			//auto qty = i++->value().as_int<int>();
+			float qty = 0.0f;
+			fast_float::from_chars(i->value().begin(), i->value().end(), qty);
+			fmt::print("qty : {}\n", qty);
+			i++;
 
-    //std::map < std::string, std::function < void(hffix::message_reader*, Session*) >> map1;
-    _mpFixMsgLambda.emplace("A", lambdaFixA);
+			
+			if (reader->find_with_hint(hffix::tag::Price, i)) {
+				//int mantissa, exponent;
+				//i++->value().as_decimal(mantissa, exponent);
+				//fmt::print("price : {} , {}\n", mantissa, exponent);
 
+				float price = 0.0f;
+				fast_float::from_chars(i->value().begin(), i->value().end(), price);
+				fmt::print("price : {}\n", price);
+
+				flatbuffers::FlatBufferBuilder builder;
+				auto order_user_id = builder.CreateString(session->getUser()->getID());
+				auto order_serializaition = Serialization::CreateOrder(builder, order_user_id, price, qty);
+				builder.Finish(order_serializaition);
+
+				_msgBus->publish(MSGBUS_ORDER, (const char *)builder.GetBufferPointer(), builder.GetSize());
+
+			}
+		}
+	});
+}
+
+void Server::initMsgBus()
+{
+	_msgBus = new MsgBus();
+	_msgBus->init();
 }

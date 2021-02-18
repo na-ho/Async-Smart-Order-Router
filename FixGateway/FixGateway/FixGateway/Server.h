@@ -4,18 +4,30 @@
 
 #include "libs/hffix/hffix.hpp"
 #include "Session.h"
+#include "UserManager.h"
+#include "MsgBus.h"
 
-class Server
+namespace FixGateway
 {
-public:
-    Server(boost::asio::io_context& io_context, short port);
 
-private:
-    void do_accept();
+    class Server
+    {
+    public:
+        Server(boost::asio::io_context& io_context, short port);
+        ~Server();
 
-    void initFixLogon();
-   
-    MAP_LAMBDA_MSG_FIX _mpFixMsgLambda;
+    private:
+        void do_accept();
 
-    boost::asio::ip::tcp::acceptor _acceptor;
-};
+        void initFixLogon();
+        void initFixOrder();
+
+        void initMsgBus();
+
+        HASHMAP_LAMBDA_MSG_FIX _fixMsgLambda;
+        boost::asio::ip::tcp::acceptor _acceptor;
+        UserManager* _userMgr;
+        MsgBus* _msgBus;
+    };
+
+}

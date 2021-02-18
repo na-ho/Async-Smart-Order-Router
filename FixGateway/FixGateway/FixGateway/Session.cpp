@@ -10,12 +10,13 @@
 #include "PreHeader.h"
 #include "FixGatewayData.h"
 
-Session::Session(boost::asio::ip::tcp::socket socket, const MAP_LAMBDA_MSG_FIX *mpFixMsgLambda)
+using namespace FixGateway;
+
+Session::Session(boost::asio::ip::tcp::socket socket, const HASHMAP_LAMBDA_MSG_FIX *mpFixMsgLambda)
 	: _socket(std::move(socket))
-	, _mpFixMsgLambda(mpFixMsgLambda)
+	, _fixMsgLambda(mpFixMsgLambda)
 	, _seq_send(0)
 {
-	_userMgr = FixGatewayData::instance()->getUserMgr();
 }
 
 void Session::start()
@@ -51,11 +52,10 @@ void Session::do_read()
 				//(*_mpFixMsgLambda)[msgType](&reader, this);
 			//	auto testFunction = (*_mpFixMsgLambda)[msgType];
 				//auto handleFunction = _mpFixMsgLambda->at(msgType);
-				auto handleFunctionIt = _mpFixMsgLambda->find(msgType);
-				if (handleFunctionIt != _mpFixMsgLambda->end()) {
+				auto handleFunctionIt = _fixMsgLambda->find(msgType);
+				if (handleFunctionIt != _fixMsgLambda->end()) {
 					handleFunctionIt->second(&reader, this);
 				}
-				
 			}
 
 			do_read();
@@ -75,14 +75,14 @@ void Session::do_write(const char *data, std::size_t length)
 		});
 }
 
-void Session::write_fix_login(const std::string & userID, const char* data)
+void Session::write_fix_login(const std::string & userID, const char * msgType, const char* data)
 {
 	auto sizeB = sizeof(_bufferSend);
 	hffix::message_writer logon(_bufferSend, _bufferSend + sizeof(_bufferSend));
 
 //	boost::posix_time::ptime tsend(boost::gregorian::date(2017, 8, 9), boost::posix_time::time_duration::time_duration(12, 34, 56));
 	logon.push_back_header(FIX_SENDING_VERSION);
-	logon.push_back_string(hffix::tag::MsgType, "5");
+	logon.push_back_string(hffix::tag::MsgType, msgType);
 	logon.push_back_string(hffix::tag::SenderCompID, GATEWAY_NAME);
 	logon.push_back_string(hffix::tag::TargetCompID, userID);
 	logon.push_back_int(hffix::tag::MsgSeqNum, _seq_send++);
@@ -97,3 +97,14 @@ void Session::write_fix_login(const std::string & userID, const char* data)
 	do_write(_bufferSend, logon.message_end() - _bufferSend);
 
 }
+
+User* Session::getUser()
+{
+	return _user;
+}
+
+void Session::setUser(User* user)
+{
+	_user = user;
+}
+

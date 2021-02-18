@@ -10,19 +10,25 @@
 
 #include "Server.h"
 #include "FixGatewayData.h"
+#include "UserFactory.h"
 
 using namespace std;
 
+void warmUp() {
+    auto fixGatewayData = FixGateway::FixGatewayData::instance();
+    auto userFactory = FixGateway::UserFactory::instance();
+}
 
 int main()
 {
-    auto fixGatewayData = FixGatewayData::instance(); // warmup
+    warmUp();
+
     fmt::print("Start listening...\n");
     try
     {
         boost::asio::io_context io_context;
 
-        Server s(io_context, 1234);
+        FixGateway::Server s(io_context, 1234);
 
         io_context.run();
     }
