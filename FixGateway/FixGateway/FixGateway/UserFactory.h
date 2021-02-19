@@ -7,11 +7,13 @@ namespace FixGateway
     class UserFactory
     {
     public:
+        static void warmUp() {
+            if (!s_instance)
+                s_instance = new UserFactory;
+        }
 
         static UserFactory* instance()
         {
-            if (!s_instance)
-                s_instance = new class UserFactory;
             return s_instance;
         }
 

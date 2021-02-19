@@ -1,7 +1,4 @@
-﻿// SOR.cpp : Defines the entry point for the application.
-//
-
-#include "SOR.h"
+﻿#include "SOR.h"
 
 using namespace std;
 

@@ -1,8 +1,4 @@
-﻿// FixGateway.cpp : Defines the entry point for the application.
-//
-
-
-#include <fmt/format.h>
+﻿#include <fmt/format.h>
 
 //#include <boost/uuid/uuid.hpp>
 //#include <boost/uuid/uuid_generators.hpp>
@@ -11,17 +7,23 @@
 #include "Server.h"
 #include "FixGatewayData.h"
 #include "UserFactory.h"
+#include "FixGateway.h"
 
 using namespace std;
 
 void warmUp() {
-    auto fixGatewayData = FixGateway::FixGatewayData::instance();
-    auto userFactory = FixGateway::UserFactory::instance();
+    FixGateway::FixGatewayData::warmUp();
+    FixGateway::UserFactory::warmUp();
 }
 
 int main()
 {
+    // temp for testing, in production has to be set from external
+    const std::string server_id = "1";
+
     warmUp();
+    FixGateway::FixGatewayData::instance()->setServer_id(server_id);
+    FixGateway::FixGatewayData::instance()->init();
 
     fmt::print("Start listening...\n");
     try

@@ -52,6 +52,8 @@ void Session::do_read()
 				//(*_mpFixMsgLambda)[msgType](&reader, this);
 			//	auto testFunction = (*_mpFixMsgLambda)[msgType];
 				//auto handleFunction = _mpFixMsgLambda->at(msgType);
+
+				// use hash instead of if-else because is caculate once O(1), while if-else is O(N) because have to check all
 				auto handleFunctionIt = _fixMsgLambda->find(msgType);
 				if (handleFunctionIt != _fixMsgLambda->end()) {
 					handleFunctionIt->second(&reader, this);

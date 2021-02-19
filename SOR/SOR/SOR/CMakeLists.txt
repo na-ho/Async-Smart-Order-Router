@@ -16,7 +16,7 @@ find_package(Flatbuffers)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${FLATBUFFERS_INCLUDE_DIR})
 # Add source to this project's executable.
-add_executable (SOR "SOR.cpp" "SOR.h")
+add_executable (SOR "SOR.cpp" "SOR.h" "HandlerOrder.cpp" "MsgBus.h" "MshBus.cpp")
 
 target_link_libraries(SOR PRIVATE fmt::fmt-header-only;Boost::date_time)
 target_compile_features(SOR PRIVATE cxx_std_17)

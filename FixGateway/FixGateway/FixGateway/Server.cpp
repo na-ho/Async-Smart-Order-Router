@@ -22,23 +22,22 @@ Server::Server(boost::asio::io_context& io_context, short port)
 	: _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
 {
 	_userMgr = FixGatewayData::instance()->getUserMgr();
+	_msgBus = FixGatewayData::instance()->getMsgBus();
+	_server_id = FixGatewayData::instance()->getServer_id();
+
 	initFixLogon();
 	initFixOrder();
-	initMsgBus();
 
 	do_accept();
 }
 
 FixGateway::Server::~Server()
 {
-	if (_msgBus != NULL) {
-		delete _msgBus;
-	}
+
 }
 
 void Server::do_accept()
 {
-
 	_acceptor.async_accept(
 		[this](boost::system::error_code ec, tcp::socket socket)
 		{
@@ -126,7 +125,8 @@ void Server::initFixOrder()
 
 				flatbuffers::FlatBufferBuilder builder;
 				auto order_user_id = builder.CreateString(session->getUser()->getID());
-				auto order_serializaition = Serialization::CreateOrder(builder, order_user_id, price, qty);
+				auto order_server_id = builder.CreateString(_server_id);
+				auto order_serializaition = Serialization::CreateOrder_FIXG_SOR(builder, order_user_id, order_server_id, price, qty);
 				builder.Finish(order_serializaition);
 
 				_msgBus->publish(MSGBUS_ORDER, (const char *)builder.GetBufferPointer(), builder.GetSize());
@@ -134,10 +134,4 @@ void Server::initFixOrder()
 			}
 		}
 	});
-}
-
-void Server::initMsgBus()
-{
-	_msgBus = new MsgBus();
-	_msgBus->init();
 }

@@ -1,7 +1,8 @@
 namespace FixGateway.Serialization;
 
-table Order {
+table Order_FIXG_SOR {
   user_id:string;
+  server_id:string;
   price:float;
   qty:float;
 }

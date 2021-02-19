@@ -22,12 +22,12 @@ namespace FixGateway
         void initFixLogon();
         void initFixOrder();
 
-        void initMsgBus();
 
         HASHMAP_LAMBDA_MSG_FIX _fixMsgLambda;
         boost::asio::ip::tcp::acceptor _acceptor;
         UserManager* _userMgr;
         MsgBus* _msgBus;
+        std::string _server_id;
     };
 
 }

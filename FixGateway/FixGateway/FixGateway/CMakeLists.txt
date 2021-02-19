@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.8)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME ON)
+add_compile_definitions(HFFIX_NO_BOOST_DATETIME 1)
 
 #set(BOOST_LIB  "C:/libs/boost_1_75_0/lib64-msvc-14.2")
 #ADD_DEFINITIONS("-DBOOST_ALL_NO_LIB")
