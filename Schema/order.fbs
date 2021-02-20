@@ -1,9 +1,11 @@
-namespace FixGateway.Serialization;
+namespace MsgSerialization;
 
 table Order_FIXG_SOR {
   user_id:string;
   server_id:string;
+  preferred_venue_id:int;
   price:float;
   qty:float;
 }
 
+root_type Order_FIXG_SOR;

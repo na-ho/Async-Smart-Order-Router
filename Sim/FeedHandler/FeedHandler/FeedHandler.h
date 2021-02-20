@@ -1,4 +1,4 @@
-﻿// MarketConnect.h : Include file for standard system include files,
+﻿// FeedHandler.h : Include file for standard system include files,
 // or project specific include files.
 
 #pragma once

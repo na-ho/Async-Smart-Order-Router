@@ -11,7 +11,7 @@
 #include "FixGatewayData.h"
 #include "UserFactory.h"
 
-#include "schema/order_generated.h"
+#include "schemas/order_generated.h"
 
 
 using boost::asio::ip::tcp;
@@ -126,10 +126,10 @@ void Server::initFixOrder()
 				flatbuffers::FlatBufferBuilder builder;
 				auto order_user_id = builder.CreateString(session->getUser()->getID());
 				auto order_server_id = builder.CreateString(_server_id);
-				auto order_serializaition = Serialization::CreateOrder_FIXG_SOR(builder, order_user_id, order_server_id, price, qty);
+				auto order_serializaition = MsgSerialization::CreateOrder_FIXG_SOR(builder, order_user_id, order_server_id, 1, price, qty);
 				builder.Finish(order_serializaition);
 
-				_msgBus->publish(MSGBUS_ORDER, (const char *)builder.GetBufferPointer(), builder.GetSize());
+				_msgBus->publish(MSGBUS_FIXG_SOR_ORDER, (const char *)builder.GetBufferPointer(), builder.GetSize());
 
 			}
 		}

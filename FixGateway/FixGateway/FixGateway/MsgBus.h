@@ -13,7 +13,7 @@ namespace FixGateway
 		~MsgBus();
 
 		void init(const std::string &server_id);
-		void deInit();
+		void destroy();
 		void subscribe();
 
 		void publish(const char *subject, const char*data, int  size);
@@ -22,8 +22,8 @@ namespace FixGateway
 		static void onMgs_report(MSGBUS_NATS_PARAMETER);
 
 	private:
-		natsConnection* conn = NULL;
-		natsSubscription* sub = NULL;
+		natsConnection* _conn = NULL;
+		natsSubscription* _sub_report = NULL;
 		std::string _server_id;
 	};
 }

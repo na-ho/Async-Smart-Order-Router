@@ -9,7 +9,7 @@ MsgBus::MsgBus()
 
 MsgBus::~MsgBus()
 {
-    deInit();
+    destroy();
 }
 
 void MsgBus::init(const std::string& server_id)
@@ -17,7 +17,7 @@ void MsgBus::init(const std::string& server_id)
 	volatile bool done = false;
     _server_id = "." + server_id;
 
-	natsStatus s = natsConnection_ConnectTo(&conn, NATS_DEFAULT_URL);
+	natsStatus s = natsConnection_ConnectTo(&_conn, NATS_DEFAULT_URL);
 
     if (s == NATS_OK)
     {
@@ -26,22 +26,22 @@ void MsgBus::init(const std::string& server_id)
     nats_Sleep(100);
 }
 
-void MsgBus::deInit()
+void MsgBus::destroy()
 {
-    natsSubscription_Destroy(sub);
-    natsConnection_Destroy(conn);
+    natsSubscription_Destroy(_sub_report);
+    natsConnection_Destroy(_conn);
 }
 
 void MsgBus::subscribe()
 {
-    natsConnection_Subscribe(&sub, conn, getSubject(MSGBUS_REPORT).c_str(), MsgBus::onMgs_report, NULL);
+    natsConnection_Subscribe(&_sub_report, _conn, getSubject(MSGBUS_REPORT).c_str(), MsgBus::onMgs_report, NULL);
 }
 
 void MsgBus::publish(const char* subject, const char* data, int size)
 {
     natsMsg* msg = NULL;
     natsMsg_Create(&msg, subject, NULL, data, size);
-    natsConnection_PublishMsg(conn, msg);
+    natsConnection_PublishMsg(_conn, msg);
     natsMsg_Destroy(msg);
 }
 
