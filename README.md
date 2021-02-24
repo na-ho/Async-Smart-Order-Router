@@ -20,7 +20,7 @@ Currently, it has 3 services.
 
 In the future will have custom API and REST API
 
-![Image of System](https://raw.githubusercontent.com/na-ho/Async/main/Doc/SystemArchitecture.png)
+![Image of System](https://github.com/na-ho/Async-Smart-Order-Router/blob/master/Doc/SystemArchitecture.png)
 
 ## Distributed
 As mention, all services are distributed systems.
