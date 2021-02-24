@@ -50,3 +50,4 @@ Library : libcuckoo, hffix, fast_float
 2.	Start Fix Gateway
 3.	Start SOR
 4.	Start Market Gateway
+5.	Testing with Mini-Fix for clientes and Market Gateway
