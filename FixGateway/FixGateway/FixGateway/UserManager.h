@@ -11,10 +11,10 @@ namespace FixGateway
 	{
 	public:
 		bool checkAuthorization(const std::string& userName, const std::string& password);
-
 		void insertUser(std::string userID, User* user);
+
 	private:
-		libcuckoo::cuckoohash_map<std::string, User*> _mpUser;
+		libcuckoo::cuckoohash_map<std::string, User*> _users;
 	};
 
 }

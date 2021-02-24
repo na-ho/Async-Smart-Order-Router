@@ -1,0 +1,15 @@
+namespace MsgSerialization;
+
+table Feed_Market_Data {
+  market_venue_id:int;
+  symbol:string;
+  sell:[Feed_Market_Data_Entity];
+  buy:[Feed_Market_Data_Entity];
+}
+
+table Feed_Market_Data_Entity {
+  price:float;
+  qty:float;
+}
+
+root_type Feed_Market_Data;

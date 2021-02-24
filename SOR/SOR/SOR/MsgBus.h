@@ -16,8 +16,6 @@ namespace SOR {
 		void subscribe();
 
 		natsConnection* _conn = NULL;
-		//HandlerOrder _handleOrder;
 		std::vector<Handler*> _handlers;
-
 	};
 }

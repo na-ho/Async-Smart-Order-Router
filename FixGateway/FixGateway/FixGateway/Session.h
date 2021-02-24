@@ -8,13 +8,11 @@
 #include "libs/hffix/hffix.hpp"
 
 #define HASHMAP_LAMBDA_MSG_FIX std::unordered_map<std::string, std::function<void(hffix::message_reader*, Session*)>> 
+
 namespace FixGateway
 {
-
-    class Session
-        : public std::enable_shared_from_this<Session>
+    class Session : public std::enable_shared_from_this<Session>
     {
-
     public:
 
         Session(boost::asio::ip::tcp::socket socket, const HASHMAP_LAMBDA_MSG_FIX* mpFixMsgLambda);
@@ -31,10 +29,11 @@ namespace FixGateway
 
 
         boost::asio::ip::tcp::socket _socket;
-        enum { max_length = 1024 };
-        char _buffer[max_length];
-        char _bufferSend[max_length];
-        // std::string _userID;
+        enum { chunksize = 4096};
+        enum { max_fix_read_length = 1 << 20, max_fix_write_length = 1 << 13 };
+        char _buffer[max_fix_read_length];
+        char _bufferSend[max_fix_write_length];
+        unsigned int buffer_read_length;
         unsigned int _seq_send;
         User* _user;
 

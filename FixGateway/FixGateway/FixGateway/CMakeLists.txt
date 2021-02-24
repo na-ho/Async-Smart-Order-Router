@@ -1,5 +1,4 @@
-﻿
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.8)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME ON)
@@ -26,12 +25,12 @@ include_directories(${FLATBUFFERS_INCLUDE_DIR})
 message("## Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 message("## CMAKE_CURRENT_LIST_DIR: ${CMAKE_CURRENT_LIST_DIR}")
 
-# Add source to this project's executable.
-add_executable (FixGateway "FixGateway.cpp" "FixGateway.h" "Server.h" "Server.cpp" "Session.h" "Session.cpp" "UserManager.h" "UserManager.cpp" "util/UtilString.h" "util/UtilString.cpp" "PreHeader.h" "FixGatewayData.h" "FixGatewayData.cpp" "User.h" "User.cpp" "MsgBus.h" "MsgBus.cpp" "UserFactory.h" "UserFactory.cpp")
+
+add_executable (FixGateway "FixGateway.cpp"  "Server.h" "Server.cpp" "Session.h" "Session.cpp" "UserManager.h" "UserManager.cpp" "util/UtilString.h" "util/UtilString.cpp" "PreHeader.h" "FixGatewayData.h" "FixGatewayData.cpp" "User.h" "User.cpp" "MsgBus.h" "MsgBus.cpp" "UserFactory.h" "UserFactory.cpp")
 target_link_libraries(FixGateway PRIVATE fmt::fmt-header-only;Boost::date_time)
 target_compile_features(FixGateway PRIVATE cxx_std_17)
 target_link_libraries(FixGateway PRIVATE cnats::nats_static)
-# TODO: Add tests and install targets if needed.
+
 # target_link_libraries(FixGateway ${Boost_LIBRARIES})
 #target_link_libraries(FixGateway ${BOOST_LIBRARY_DIRS})
 #target_link_libraries(FixGateway ${BOOST_LIB})

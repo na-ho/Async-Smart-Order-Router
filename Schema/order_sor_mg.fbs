@@ -1,11 +1,12 @@
 namespace MsgSerialization;
 
-table Order_FIXG_SOR {
+table Order_SOR_Market {
   user_id:string;
   server_id:string;
-  preferred_venue_id:int;
+  market_venue_id:int;
+  symbol:string;
   price:float;
   qty:float;
 }
 
-root_type Order_FIXG_SOR;
+root_type Order_SOR_Market;

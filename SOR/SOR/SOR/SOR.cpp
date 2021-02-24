@@ -1,12 +1,24 @@
 ﻿#include <fmt/format.h>
 
-#include "SOR.h"
 #include "MsgBus.h"
+#include "MarketsData.h"
+#include "OrderManager.h"
 
 using namespace std;
 
+void warmUp() {
+	SOR::MarketsData::warmUp();
+	SOR::OrderManager::warmUp();
+}
+
+void simTest() {
+}
+
 int main()
 {
+	warmUp();
+	simTest();
+
 	SOR::MsgBus msgBus;
 	fmt::print("SOR init...\n");
 	msgBus.init();

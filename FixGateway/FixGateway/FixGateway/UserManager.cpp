@@ -14,6 +14,5 @@ bool UserManager::checkAuthorization(const std::string& userName, const std::str
 
 void UserManager::insertUser(std::string userID, User* user)
 {
-    _mpUser.insert(std::move(userID), user);
-    //fmt::print("user size: {}\n", _mpUser.size());
+    _users.insert(std::move(userID), user);
 }

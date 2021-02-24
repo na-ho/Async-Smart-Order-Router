@@ -9,7 +9,6 @@
 
 namespace FixGateway
 {
-
     class Server
     {
     public:
@@ -21,7 +20,6 @@ namespace FixGateway
 
         void initFixLogon();
         void initFixOrder();
-
 
         HASHMAP_LAMBDA_MSG_FIX _fixMsgLambda;
         boost::asio::ip::tcp::acceptor _acceptor;

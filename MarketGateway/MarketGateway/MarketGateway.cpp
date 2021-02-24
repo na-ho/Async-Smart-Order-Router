@@ -1,12 +1,15 @@
-﻿// MarketGateway.cpp : Defines the entry point for the application.
-//
+﻿#include <fmt/format.h>
 
-#include "MarketGateway.h"
+#include "MarketVenueClient.h"
 
-using namespace std;
+#include "Gateway.h"
 
 int main()
 {
-	cout << "Hello CMake." << endl;
+	fmt::print("Market Gateway init...\n");
+	MarketGateway::Gateway gateway;
+	gateway.init();
+	gateway.start();
+	fmt::print("Market Gateway stopped...\n");
 	return 0;
 }

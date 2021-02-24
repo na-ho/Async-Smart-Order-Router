@@ -1,12 +1,10 @@
-﻿// FeedHandler.cpp : Defines the entry point for the application.
-//
+﻿#include "MsgBus.h"
+#include "GenerateSymbol.h"
 
-#include "FeedHandler.h"
 
-using namespace std;
+// Not yet implemnted
 
 int main()
 {
-	cout << "Hello CMake." << endl;
 	return 0;
 }

@@ -1,18 +1,15 @@
-#include <memory>
 #include <fmt/format.h>
 
 #include "libs/hffix/hffix.hpp"
 #include "libs/sole.hpp"
 #include "libs/fast_float/fast_float.h"
 
-#include "FixGateway.h"
 #include "Server.h"
 #include "Session.h"
 #include "FixGatewayData.h"
 #include "UserFactory.h"
 
-#include "schemas/order_generated.h"
-
+#include "schemas/order_fixg_sor_generated.h"
 
 using boost::asio::ip::tcp;
 
@@ -41,23 +38,6 @@ void Server::do_accept()
 	_acceptor.async_accept(
 		[this](boost::system::error_code ec, tcp::socket socket)
 		{
-			//   boost::uuids::uuid uuid = boost::uuids::random_generator()();
-	   //        std::cout << uuid << std::endl;
-			 //  sole::uuid u0 = sole::uuid0(), u1 = sole::uuid1(), u4 = sole::uuid4();
-
-
-
-			//   fmt::print("Peer IP: {}, {}\n", socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port());
-		   //    auto source = fmt::format("{}{}", socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port());
-		   //    sole::uuid u4 = sole::rebuild(source);
-			auto u4 = sole::uuid4();
-			//   boost::multiprecision::uint128_t combined = u4.ab << 64 | u4.cd;
-			//   boost::multiprecision::uint128_t  test;
-			//   fmt::print("do_accept {}\n", u4.base62());
-			fmt::print("do_accept {}, {}\n", u4.ab, u4.cd);
-			//   fmt::print("do_accept {}\n", combined);
-			fmt::print("do_accept {}, {}\n", socket.remote_endpoint().data()->sa_family, socket.remote_endpoint().port());
-
 			if (!ec)
 			{
 				socket.set_option(boost::asio::ip::tcp::no_delay(true));
@@ -106,32 +86,45 @@ void Server::initFixOrder()
 	_fixMsgLambda.emplace("D", [this](hffix::message_reader* reader, Session* session) {
 		fmt::print("order\n");
 		hffix::message_reader::const_iterator i = reader->begin();
-		if (reader->find_with_hint(hffix::tag::OrderQty, i)) {
-			//auto qty = i++->value().as_int<int>();
-			float qty = 0.0f;
-			fast_float::from_chars(i->value().begin(), i->value().end(), qty);
-			fmt::print("qty : {}\n", qty);
+		if (reader->find_with_hint(hffix::tag::ClOrdID, i)) {
+			std::string client_order_id(i->value().begin(), i->value().end());
+			fmt::print("ClOrdID : {}\n", client_order_id);
 			i++;
+			if (reader->find_with_hint(hffix::tag::Side, i)) {
+				auto side = i->value().as_int<int>();
+				fmt::print("Side : {}\n", side);
+				i++;
+				if (reader->find_with_hint(hffix::tag::Symbol, i)) {
+					std::string symbol(i->value().begin(), i->value().end());
+					fmt::print("symbol : {}\n", side);
+					i++;
+					if (reader->find_with_hint(hffix::tag::OrderQty, i)) {
+						float qty = 0.0f;
+						fast_float::from_chars(i->value().begin(), i->value().end(), qty);
+						fmt::print("qty : {}\n", qty);
+						i++;
+						if (reader->find_with_hint(hffix::tag::Price, i)) {
+							float price = 0.0f;
+							fast_float::from_chars(i->value().begin(), i->value().end(), price);
+							fmt::print("price : {}\n", price);
 
-			
-			if (reader->find_with_hint(hffix::tag::Price, i)) {
-				//int mantissa, exponent;
-				//i++->value().as_decimal(mantissa, exponent);
-				//fmt::print("price : {} , {}\n", mantissa, exponent);
+							flatbuffers::FlatBufferBuilder builder;
+							auto order_user_id = builder.CreateString(session->getUser()->getID());
+							auto order_server_id = builder.CreateString(_server_id);
+							auto order_client_order_id = builder.CreateString(client_order_id);
+							auto order_symbol = builder.CreateString(symbol);
+							auto order_serializaition = MsgSerialization::CreateOrder_FIXG_SOR(builder, order_user_id, order_server_id, 1
+								, order_client_order_id, order_symbol, side, price, qty);
+							builder.Finish(order_serializaition);
 
-				float price = 0.0f;
-				fast_float::from_chars(i->value().begin(), i->value().end(), price);
-				fmt::print("price : {}\n", price);
+							_msgBus->publish(MSGBUS_FIXG_SOR_ORDER, (const char*)builder.GetBufferPointer(), builder.GetSize());
 
-				flatbuffers::FlatBufferBuilder builder;
-				auto order_user_id = builder.CreateString(session->getUser()->getID());
-				auto order_server_id = builder.CreateString(_server_id);
-				auto order_serializaition = MsgSerialization::CreateOrder_FIXG_SOR(builder, order_user_id, order_server_id, 1, price, qty);
-				builder.Finish(order_serializaition);
-
-				_msgBus->publish(MSGBUS_FIXG_SOR_ORDER, (const char *)builder.GetBufferPointer(), builder.GetSize());
-
+						}
+					}
+				}
 			}
+			
+			
 		}
 	});
 }

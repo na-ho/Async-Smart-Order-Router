@@ -26,37 +26,29 @@ void Session::start()
 
 void Session::do_read()
 {
+	buffer_read_length = 0;
 	auto self(shared_from_this());
-	_socket.async_read_some(boost::asio::buffer(_buffer, max_length),
+	_socket.async_read_some(boost::asio::buffer(_buffer, chunksize),
 		[this, self](boost::system::error_code ec, std::size_t length)
 		{
 			if (!ec)
 			{
-				fmt::printf("read some data : %.*s\n", length, _buffer);
-				//	std::cout << "read some data : " << data_ << std::endl;
-				//	std::cout << "read some length : " << length << std::endl;
+				buffer_read_length += length;
+				//fmt::printf("read some data : %.*s\n", length, _buffer);
 				hffix::message_reader reader(_buffer, length);
-				//	fmt::print("message_type : {}\n", reader.message_type()->value());
-				//	fmt::print("message_type 1 : {}\n", reader.message_type()->value().begin());
-				//	auto ptr = reader.message_type()->value();
-					//if(UtilString::fast_compare())
-					//if (reader.message_type()->value().as_char() == 'A') {
-					/*fmt::print("test : {}\n", UtilString::fast_compare("ASD", "ASD", 3));
-					fmt::print("test : {}\n", UtilString::fast_compare("ASD", "AS", 3));
-					fmt::print("test : {}\n", UtilString::fast_compare("ASD", "ASE", 3));
-					fmt::print("test : {}\n", UtilString::fast_compare("AS", "ASE", 2));*/
-				//if (UtilString::fast_compare(reader.message_type()->value().begin(), "A", 1) == 0) {
-					// login
-				//}
-				auto msgType = reader.message_type()->value().as_string();
-				//(*_mpFixMsgLambda)[msgType](&reader, this);
-			//	auto testFunction = (*_mpFixMsgLambda)[msgType];
-				//auto handleFunction = _mpFixMsgLambda->at(msgType);
-
-				// use hash instead of if-else because is caculate once O(1), while if-else is O(N) because have to check all
-				auto handleFunctionIt = _fixMsgLambda->find(msgType);
-				if (handleFunctionIt != _fixMsgLambda->end()) {
-					handleFunctionIt->second(&reader, this);
+				
+				for (; reader.is_complete(); reader = reader.next_message_reader()) {
+					if (reader.is_valid()) {
+						auto msgType = reader.message_type()->value().as_string();
+						auto handleFunctionIt = _fixMsgLambda->find(msgType);
+						if (handleFunctionIt != _fixMsgLambda->end()) {
+							handleFunctionIt->second(&reader, this);
+						}
+					}
+				}
+				buffer_read_length = reader.buffer_end() - reader.buffer_begin();
+				if (buffer_read_length > 0) {
+					std::memmove(_buffer, reader.buffer_begin(), buffer_read_length);
 				}
 			}
 
@@ -82,7 +74,6 @@ void Session::write_fix_login(const std::string & userID, const char * msgType, 
 	auto sizeB = sizeof(_bufferSend);
 	hffix::message_writer logon(_bufferSend, _bufferSend + sizeof(_bufferSend));
 
-//	boost::posix_time::ptime tsend(boost::gregorian::date(2017, 8, 9), boost::posix_time::time_duration::time_duration(12, 34, 56));
 	logon.push_back_header(FIX_SENDING_VERSION);
 	logon.push_back_string(hffix::tag::MsgType, msgType);
 	logon.push_back_string(hffix::tag::SenderCompID, GATEWAY_NAME);
