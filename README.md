@@ -4,7 +4,7 @@ To archive ultra low latency, the project is a low-level implementation.
 
 ## Status
 This project is in a proof of concept state.   
-But can run to prove all of te designs.
+But can run to prove all of the designs.
 
 ## Design
 The project is designed with low latency and scalability in mind.  
